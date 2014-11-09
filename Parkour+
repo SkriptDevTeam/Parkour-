@@ -1,0 +1,192 @@
+#/////////////////////////////////////
+#Skrypt gotowy
+#Skończył go Slupik98 i adek1990
+#/////////////////////////////////////
+
+options:
+	tag: &7[&3Parkour&c+&7]
+command /parkour [<text>] [<text>]:
+	aliases: /p, /pk
+	trigger:
+		if arg 1 is not set:
+			if player has permission "pk.help" or "pk.*":
+				send "&8====================== &3Parkour&c+ &8======================"
+				send "&7* &a/p create <NAZWA> &8- &eStworzenie parkoura"
+				send "&7* &a/p remove <NAZWA> &8- &eUsuwanie parkoura"
+				send "&7* &a/p setspawn <NAZWA> &8- &eUstawianie spawnu parkoura"
+				send "&7* &a/p setend <NAZWA> &8- &eUstawianie konca parkoura"
+				send "&7* &a/p setprize <NAZWA> &8- &eUstawia nagrode za parkour"
+				send "&7* &a/p list &8- &eLista parkourow"
+				send "&8====================================================="
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "set" or "setparkour" or "create" or "add":
+			if player has permission "pk.create" or "pk.*":
+				if arg 2 is set:
+					set {_nazwa} to arg 2
+					if {parkour::nazwa::%{_nazwa}%} is not set:
+						set {parkour::nazwa::%{_nazwa}%} to true
+						add arg 2 to {parkour::lista::list::*}
+						send "{@tag} &aParkour &e%arg 2% &azostal stworzony."
+						send "&7* &aAby ustawic spawn parkoura wpisz &e/p setspawn <NAZWA>"
+						send "&7* &aAby ustawic start parkoura wpisz &e/p setstart <NAZWA>"
+						send "&7* &aAby ustawic koniec parkoura wpisz &e/p setend <NAZWA>"
+						send "&7* &aAby ustawic nagrode za parkour wpisz &e/p setprize <NAZWA>"
+					else:
+						send "{@tag} &cParkour &e%arg 2% &cjuz istnieje."
+				else:
+					send "{@tag} &cUzycie: &e/p add <NAZWA>"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "setstart":
+			if player has permission "pk.setspawn" or "pk.*":
+				if arg 2 is set:
+					set {_nazwa} to arg 2
+					if {parkour::nazwa::%{_nazwa}%} is set:
+						set {_loc} to location of block at location of player
+						if block at {_loc} is inactive stone plate or active stone plate:
+							set {_nazwa} to arg 2
+							set {parkour::nazwa::%{_nazwa}%::start::%{_loc}%} to true
+							set {parkour::locStart::%{_loc}%::nazwaAreny} to arg 2
+							set {parkour::nazwa::%{_nazwa}%::locStart} to {_loc}
+							send "{@tag} &aUstawiono spawn dla mapy &e%arg 2%&a."
+					else:
+						send "{@tag} &cMapa &e%arg 2% &anie istnieje."
+				else:
+					send "{@tag} &cUzycie: &e/p setspawn <NAZWA>"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "setspawn":
+			if player has permission "pk.setspawn" or "pk.*":
+				if arg 2 is set:
+					set {_nazwa} to arg 2
+					if {parkour::nazwa::%{_nazwa}%} is set:
+						set {_loc} to location of block at location of player
+						set {_nazwa} to arg 2
+						set {parkour::nazwa::%{_nazwa}%::spawn::%{_loc}%} to true
+						set {parkour::locSpawn::%{_loc}%::nazwaAreny} to arg 2
+						set {parkour::nazwa::%{_nazwa}%::spawn} to {_loc}
+						send "{@tag} &aUstawiono spawn dla mapy &e%arg 2%&a."
+					else:
+						send "{@tag} &cMapa &e%arg 2% &anie istnieje."
+				else:
+					send "{@tag} &cUzycie: &e/p setspawn <NAZWA>"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "remove" or "unset" or "removeparkour":
+			if player has permission "pk.remove" or "pk.*":
+				if arg 2 is set:
+					set {_nazwa} to arg 2
+					if {parkour::nazwa::%{_nazwa}%} is set:
+						remove arg 2 from {parkour::lista::list::*}
+						set {_loc} to {parkour::nazwa::%{_nazwa}%::locEnd}
+						delete {parkour::locEnd::%{_loc}%::nazwaAreny}
+						set {_loc} to {parkour::nazwa::%{_nazwa}%::locStart}
+						delete {parkour::locStart::%{_loc}%::nazwaAreny}
+						delete {parkour::nazwa::%{_nazwa}%}
+						send "{@tag} &aParkour &e%arg 2% &azostal usuniety."
+					else:
+						send "{@tag} &cParkour &e%arg 2% &cnie istnieje."
+				else:
+					send "{@tag} &cUzycie: &e/p remove <NAZWA>"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		arg 1 is "list":
+			if player has permission "pk.list" or "pk.*":
+				if {parkour::lista::list::*} is set:
+					set {_x} to "%{parkour::lista::list::*}%"
+					replace all " and " with ", " in {_x}
+					replace all "," with "&b,&e" in {_x}
+					send "{@tag} &aLista map parkour &3(&b%size of {parkour::lista::list::*}%&3):"
+					send "&e%{_x}%"
+				else:
+					send "{@tag} &cBrak parkourow. &3(&b0&3)"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "setprize":
+			if player has permission "pk.setprize" or "pk.*":
+				if arg 2 is set:
+					set {_nazwa} to arg 2
+					if {parkour::nazwa::%{_nazwa}%} is set:
+						clear {parkour::nazwa::%{_nazwa}%::prize::*}
+						loop all items in player's inventory:
+							add loop-item to {parkour::nazwa::%{_nazwa}%::prize::*}
+						if {parkour::nazwa::%{_nazwa}%::prize::*} is not empty:
+							send "{@tag} &aNagroda do parkouru &e%arg 2% &azostala ustawiona."
+						else:
+							send "{@tag} &aMasz puste eq!."
+					else:
+						send "{@tag} &cParkour &e%arg 2% &cnie istnieje."
+				else:
+					send "{@tag} &cUzycie: &e/p setprize <NAZWA>"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "setend":
+			if player has permission "pk.setend" or "pk.*":
+				if arg 2 is set:
+					set {_nazwa} to arg 2
+					if {parkour::nazwa::%{_nazwa}%} is set:
+						set {_loc} to location of block at location of player
+						if block at {_loc} is inactive wood plate or active wood plate:
+							set {parkour::nazwa::%{_nazwa}%::end::%{_loc}%} to true
+							set {parkour::locEnd::%{_loc}%::nazwaAreny} to arg 2
+							set {parkour::nazwa::%{_nazwa}%::locEnd} to {_loc}
+							broadcast "%{parkour::locEnd::%{_loc}%::nazwaAreny}%"
+							send "{@tag} &aMeta dla parkoura &e%arg 2% &azostala ustawiona."
+						else:
+							send "{@tag} &cMusisz stac na plytce naciskowej (drawnianej)."
+					else:
+						send "{@tag} &cParkour &e%arg 2% &cnie istnieje."
+				else:
+					send "{@tag} &cUzycie: &e/p setend <NAZWA>"
+			else:
+				send "{@tag} &cBrak uprawnien."
+		if arg 1 is "debuge":
+			set {parkour::gracz::%player%::start} to false
+			send "a"
+on any move:
+	if {parkour::gracz::%player%::start} is true:
+		if block at location of player is water:
+			send "{@tag} &cPrzegrałeś zostaniesz teleportowany na start"
+			set {_nazwa} to {parkour::gracz::%player%::nazwaAreny}
+			teleport player to {parkour::nazwa::%{_nazwa}%::spawn}
+			set {parkour::gracz::%player%::start} to false
+			delete {parkour::gracz::%player%::nazwaAreny}
+	if block at location of player is inactive stone plate or active stone plate:
+		set {_loc} to location of block at location of player
+		set {_nazwa} to {parkour::locStart::%{_loc}%::nazwaAreny}
+		if {parkour::nazwa::%{_nazwa}%::start::%{_loc}%} is not set:
+			stop
+		if {parkour::nazwa::%{_nazwa}%::start::%{_loc}%} is true:
+			if {parkour::gracz::%player%::start} is not set:
+				set {parkour::gracz::%player%::start} to false
+			if {parkour::gracz::%player%::start} is false:
+				set {parkour::gracz::%player%::start} to true
+				set {parkour::gracz::%player%::nazwaAreny} to {parkour::locStart::%{_loc}%::nazwaAreny}
+				set {_index} to 0
+				set {parkour::gracz::%player%::minuty} to 0
+				set {parkour::gracz::%player%::sekundy} to 0
+				set {_x} to true
+				while {_x} is true:
+					add 1 to {_index}
+					add 1 to {parkour::gracz::%player%::sekundy}
+					display "&6%{parkour::gracz::%player%::minuty}% &9minut/y &6%{parkour::gracz::%player%::sekundy}% &9sekund" on bossbar with {_index} percent for player
+					if {parkour::gracz::%player%::sekundy} is 60:
+						add 1 to {parkour::gracz::%player%::minuty}
+						set {parkour::gracz::%player%::sekundy} to 0
+					if {parkour::gracz::%player%::start} is false:
+						set {parkour::gracz::%player%::sekundy} to 0
+						set {parkour::gracz::%player%::minuty} to 0
+						set {_x} to false
+					wait 1 second
+	if block at location of player is inactive wood plate or active wood plate:
+		if {parkour::gracz::%player%::start} is true:
+			set {_loc} to location of block at location of player
+			set {_nazwa} to {parkour::locEnd::%{_loc}%::nazwaAreny}
+			if {parkour::nazwa::%{_nazwa}%::end::%{_loc}%} is not set:
+				stop
+			if {parkour::nazwa::%{_nazwa}%::end::%{_loc}%} is true:
+				set {parkour::gracz::%player%::start} to false
+				send "{@tag} &aPrzeszedłeś parkoura w czasnie: &6%{parkour::gracz::%player%::minuty}% &aminut/y &6%{parkour::gracz::%player%::sekundy}% &asekund"
+				add {parkour::nazwa::%{_nazwa}%::prize::*} to the player
+				delete {parkour::gracz::%player%::nazwaAreny}
