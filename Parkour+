@@ -147,7 +147,7 @@ command /parkour [<text>] [<text>]:
 on any move:
 	if {parkour::gracz::%player%::start} is true:
 		if block at location of player is water:
-			send "{@tag} &cPrzegrałeś zostaniesz teleportowany na start"
+			send "{@tag} &cPrzegrales zostaniesz teleportowany na start"
 			set {_nazwa} to {parkour::gracz::%player%::nazwaAreny}
 			teleport player to {parkour::nazwa::%{_nazwa}%::spawn}
 			set {parkour::gracz::%player%::start} to false
